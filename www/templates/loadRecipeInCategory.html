@@ -1,0 +1,20 @@
+<div ng-init="cats">
+	<ion-view view-title="{{cats}}">
+	  <ion-content>
+	    <ion-list>
+	      <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="recipe in recipeInCategory" type="item-text-wrap" href="#/tab/chats/{{recipe.recipeName}}">
+	      <!-- href="#/tab/dash/{{category.categoryName}}" -->
+	        <!-- <img ng-src="{{chat.face}}"> -->
+	        <input type="hidden" name="catID" value="{{cats}}" id="categoryNameHidden">
+	        <h2 >{{recipe.recipeName}}</h2>
+	        <!-- <p>{{chat.lastText}}</p> -->
+	        <i class="icon ion-chevron-right icon-accessory"></i>
+	        <ion-option-button class="button-assertive" ng-click="deleteCategory({{category.id}})">
+	          Delete
+	        </ion-option-button>
+	      </ion-item>
+	    </ion-list>
+	    <button ng-click="openModal(cats)">Edit</button>
+	  </ion-content>
+	</ion-view>
+</div>

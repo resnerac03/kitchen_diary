@@ -1,0 +1,49 @@
+<ion-view title="Edit Recipe">
+  <ion-content>
+    <ion-list>
+    	<ion-item>
+            <input type="hidden" name="count" value="1" />
+            
+    		<div class="form-group row">
+    			&nbsp; &nbsp; &nbsp;
+	    		<input type="select" class="form-control input-style" id = "rNameInput2" value="{{recipeDetail[0].recipeName}}" placeholder="Recipe Name">
+	    		&nbsp; &nbsp; &nbsp;
+		        <select  value="{{recipeDetail[0].categoryName}}" id = "rCategoryInput2" class="selectpicker input-style" >
+                    <option ng-repeat="cats in categoryData">{{cats.categoryName}}</option>
+                </select>
+    		</div>
+    	</ion-item>
+    	<ion-item>
+            <center><h2>Ingredients</h2></center>
+    		<div class="form-group row" ng-repeat="newfield in recipeIngredient">
+                &nbsp; &nbsp; &nbsp;
+                <input type="select" ng-model="newfield.ingredientsName" value = "{{newfield.ingredientsName}}" class="form-control input-style" placeholder="Ingredient" id="1field1">
+                <input type="select" ng-model="newfield.household" value="{{newfield.household}}" class="form-control input-style" placeholder="HouseHold" id="2field1">
+                <input type="select" ng-model="newfield.weighted" value="{{newfield.weighted}}" class="form-control input-style" placeholder="Weighted" id="3field1">
+                <button class="remove" ng-show="$last" ng-click="removeFields()">-</button>
+            </div>
+            <button class="add-more" ng-click="addFields()"> + </button>
+    	</ion-item>
+        <ion-item>
+            <center><h2>Procedure</h2></center>
+            <div class="form-group row" ng-repeat="procfield in recipeProcedure">
+                &nbsp; &nbsp; &nbsp;
+                <input type="select" ng-model="procfield.procedureDetail" value="{{procfield.procedureDetail}}" class="form-control input-style" placeholder="">
+                
+                <button class="remove" ng-show="$last" ng-click="removeProcFields()">-</button>
+            </div>
+            <button class="add-more" ng-click="addProcFields()"> + </button>
+        </ion-item>
+        <ion-item>
+            <center><h2>Notes</h2></center>
+            <div class="form-group row">
+                
+                <textarea type="select" id = "notes2" class="form-control input-style" placeholder="Notes">{{recipeDetail[0].notes}}</textarea>
+                
+            </div>
+        </ion-item>
+    </ion-list>
+    <br>
+    <center><button class="btn btn-success btn-lg" ng-click="saveEditRecipe()"> Save </button></center>
+  </ion-content>
+</ion-view>

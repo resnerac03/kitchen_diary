@@ -1,0 +1,22 @@
+<ion-view view-title="Recipes">
+  <ion-content>
+    <ion-list>
+      <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="recipe in recipeData" type="item-text-wrap" href="#/tab/chats/{{recipe.recipeName}}">
+      <!-- href="#/tab/chats/{{chat.id}}" -->
+        <br>
+        <h2>{{recipe.recipeName}}</h2>
+        
+        
+
+      </ion-item>
+    </ion-list>
+
+  </ion-content>
+  
+  <div id="container-floating" >
+    <div id="floating-button" ng-click="addRecipe()">
+      <p class="plus">+</p>
+    </div>
+
+</div>
+</ion-view>

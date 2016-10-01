@@ -1,0 +1,38 @@
+<ion-view >
+  <ion-content>
+    <ion-list>
+    	<br>
+    	<center><h2>{{recipeNameView}}</h2></center>
+    	<center><p>{{categoryName}}</p></center>
+    	<center><button class="btn btn-success" ng-click="editRecipe()">Edit</button><button class="btn btn-primary">Share</button></center>
+    	<br><br>
+    	<div style = "padding-left: 50px;padding-right:50px;">
+    		<h4>Ingredients:</h4>
+    		<table>
+    			<tr>
+    				<th><b>Name</b></th>
+    				<th><b>HouseHold</b></th>
+    				<th><b>Weighted</b></th>
+    			</tr>
+    			<tr ng-repeat="ingredient in recipeIngredient">
+    				<th>{{ingredient.ingredientsName}}</th>
+    				<th>{{ingredient.household}}</th>
+    				<th>{{ingredient.weighted}}</th>
+    			</tr>
+    		</table>
+
+    		<br><br>
+    		<h4>Procedure:</h4>
+	    		<ul style="list-style-type:circle; padding-left:30px;">
+	    			<li ng-repeat="proc in recipeProcedure">{{proc.procedureDetail}}</li>
+	    		</ul>
+	    	<br><br>
+	    	<h4>Notes:</h4>
+	    		<ul style="list-style-type:square; padding-left:30px;">
+	    			<li ng-repeat="note in recipeDetail">{{note.notes}}</li>
+	    		</ul>
+
+    	</div>
+    </ion-list>
+  </ion-content>
+</ion-view>  
