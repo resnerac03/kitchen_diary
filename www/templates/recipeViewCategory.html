@@ -1,0 +1,56 @@
+<ion-view cache-view="false">
+  <ion-content>
+    <ion-list>
+    	<div class="row">
+            <div class="center-block">
+        	   <h2>{{recipeNameView}}</h2>
+        	   <p>{{categoryName}}</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="center-block">
+            	<button class="btn btn-success" ng-click="editRecipe()">Edit</button>
+                <button class="btn btn-primary" ng-click="share()">Share</button>
+            </div>
+        </div>
+    	<div class="container-fluid">
+            <div class="row">
+        	   <div class="center-block">
+            		<table class="table table-striped">
+            			<tr>
+            				<th><b>Name</b></th>
+            				<th><b>HouseHold</b></th>
+            				<th><b>Weighted</b></th>
+                            <th></th>
+            			</tr>
+            			<tr ng-repeat="ingredient in recipeIngredient">
+            				<th>{{ingredient.ingredientsName}}</th>
+            				<th>{{ingredient.household}}</th>
+            				<th>{{ingredient.weighted}}</th>
+                            <th><button class="remove btn btn-danger btn-sm" ng-click="removeFields($index,ingredient.ingredientsName)">-</button></th>
+            			</tr>
+            		</table>
+                </div>
+            </div>
+
+    	
+
+            <div class="row">
+                <div class="col-md-6">
+                   <h3>Procedure</h3>
+                  <ion-list>
+                    <li ng-repeat="proc in recipeProcedure"><button class="remove btn btn-danger btn-sm" ng-click="removeProcFields($index,proc.id)">-</button> {{proc.procedureDetail}}</li>
+                  </ion-list>
+                </div>
+            </div>        
+
+
+                <h3>Notes</h3>
+                <ion-list>
+                    <li ng-repeat="note in recipeDetail">{{note.notes}}</li>
+                </ion-list>
+
+    	</div>
+    </ion-list>
+  </ion-content>
+</ion-view>  

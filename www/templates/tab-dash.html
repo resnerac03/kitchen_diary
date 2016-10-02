@@ -4,7 +4,7 @@
   <ion-content>
 
     <ion-list>
-      <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="category in categoryData" type="item-text-wrap" href="#/tab/dash/{{category.categoryName}}">
+      <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="category in categoryData | orderBy: orderName" type="item-text-wrap" href="#/tab/dash/{{category.categoryName}}">
         <!-- <img ng-src="{{chat.face}}"> -->
         <input type="hidden" name="catID">
         <h2 >{{category.categoryName}}</h2>
@@ -14,6 +14,9 @@
           Delete
         </ion-option-button>
       </ion-item>
+      <div class="row">
+        <button class="btn btn-warning center-block ion-android-list" ng-click="sortbyName1()"> Sort</button>
+      </div>
     </ion-list>
 
 

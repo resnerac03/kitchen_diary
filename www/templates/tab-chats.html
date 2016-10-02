@@ -1,14 +1,21 @@
 <ion-view view-title="Recipes">
   <ion-content>
     <ion-list>
-      <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="recipe in recipeData" type="item-text-wrap" href="#/tab/chats/{{recipe.recipeName}}">
+      <ion-item   class="item-remove-animate item-avatar item-icon-right" ng-repeat="recipe in recipeData | orderBy: orderName" type="item-text-wrap" href="#/tab/chats/{{recipe.recipeName}}">
       <!-- href="#/tab/chats/{{chat.id}}" -->
-        <br>
+        
+        <!-- <img ng-src="{{recipe.imagePath}}"> -->
         <h2>{{recipe.recipeName}}</h2>
+        <p>{{recipe.notes}}</p>
         
-        
+        <ion-option-button class="button-assertive" ng-click="deleteRecipe({{recipe.id}})">
+          Delete
+        </ion-option-button>
 
       </ion-item>
+      <div class="row">
+        <button class="btn btn-warning center-block ion-android-list" ng-click="sortbyName()"> Sort</button>
+      </div>
     </ion-list>
 
   </ion-content>

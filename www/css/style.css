@@ -44,20 +44,30 @@
   border: 1px solid #f4f5f7;
 }
 
-table {
-    margin-left:15px;
-    margin-right:15px;
-    font-family: arial, sans-serif;
-    border-collapse: collapse;
-    width: 100%;
-}
-
-td, th {
-    border: 1px solid #dddddd;
-    text-align: left;
-    padding: 8px;
-}
 
 tr:nth-child(even) {
     background-color: #dddddd;
+}
+
+ol{
+ list-style-type: decimal;
+}
+.ingForm{
+  margin-right: -20px;
+}
+
+.ingForm input {
+  margin-right: 3px;
+}
+
+.add-more{
+  margin: -10px;
+}
+
+table{
+  margin-right: 20px;
+}
+
+.addpadding{
+  padding: 2px;
 }

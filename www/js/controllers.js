@@ -17,10 +17,10 @@ angular.module('starter.controllers', ['ngCordova'])
   };
 })
 
-.controller('ChatDetailCtrl', function($state,$scope, $stateParams, Chats, $cordovaSQLite) {
-  // dbKitchen1 = window.openDatabase("sqlite","1.0","sqlitedemo",2000);
-   dbKitchen = $cordovaSQLite.openDB({name:"kitchen.db",location:"default"});
-  $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS recipe2(id integer primary key,categoryName text,recipeName text,notes text)");
+.controller('viewRecipeCategoryCtrl', function($state,$scope, $stateParams, Chats, $cordovaSQLite) {
+  var dbKitchen1 = window.openDatabase("sqlite","1.0","sqlitedemo",2000);
+   // dbKitchen = $cordovaSQLite.openDB({name:"kitchen.db",location:"default"});
+  $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS recipe2(id integer primary key,categoryName text,recipeName text,notes text,imagePath text)");
   $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS category(id integer primary key, categoryName text)");
   $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS ingredients2(id integer primary key, recipeID integer, ingredientsName text, household text, weighted text)");
   $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS procedure(id integer primary key, recipeID integer, procedureDetail text)");
@@ -29,9 +29,12 @@ angular.module('starter.controllers', ['ngCordova'])
   $scope.recID = null;
   $scope.recipeDetail = [];
   $scope.recipeIngredient = [];
-  $scope.recipeProcedure = []
+  $scope.recipeProcedure = [];
+
+  
 
   $scope.getRecipeDetails = function(){
+    dbKitchen1.transaction(function(transaction){
     var queryViewRecipe = "select * from recipe2 where recipeName = ?";
     $cordovaSQLite.execute(dbKitchen1,queryViewRecipe,[$scope.recipeNameView]).then(function(result){
       if(result.rows.length){
@@ -47,20 +50,21 @@ angular.module('starter.controllers', ['ngCordova'])
     )
 
     .then(function(){
-      alert($scope.recipeDetail[0].id);
       $scope.recID = $scope.recipeDetail[0].id;
       $scope.categoryName = $scope.recipeDetail[0].categoryName;
       $scope.getrecipeIngredients($scope.recipeDetail[0].id);
       $scope.getrecipeProcedure($scope.recipeDetail[0].id);
       $scope.editRecipe = function(){
         obj = $scope.recID;
-        $state.go('tab.editRecipe',{obj})
+        $state.go('tab.editRecipeCategory',{obj})
       }
     })
     ;
+  });
   }
 
   $scope.getrecipeIngredients = function(recipeID){
+    dbKitchen1.transaction(function(transaction){
     var queryIngredientRecipe = "select * from ingredients2 where recipeID = ?";
     $cordovaSQLite.execute(dbKitchen1,queryIngredientRecipe,[recipeID]).then(function(result){
       if(result.rows.length){
@@ -74,9 +78,22 @@ angular.module('starter.controllers', ['ngCordova'])
         console.log("Error: "+error);
       }
     );
+  });
   }
 
+  $scope.removeFields = function(removedID,deleteIdForDb) {
+    alert(deleteIdForDb);
+    $scope.recipeIngredient.splice(removedID-1,1);
+    $cordovaSQLite.execute(dbKitchen1,"DELETE FROM ingredients2 where id = ?",[deleteIdForDb]);
+  }
+  $scope.removeProcFields = function(removedID,deleteIdForDb){
+    $scope.recipeProcedure.splice(removedID-1,1);
+    $cordovaSQLite.execute(dbKitchen1,"DELETE FROM procedure where id = ?",[deleteIdForDb]);
+  }
+
+
   $scope.getrecipeProcedure = function(recipeID){
+    dbKitchen1.transaction(function(transaction){
     var queryProcedureRecipe = "select * from procedure where recipeID = ?";
     $cordovaSQLite.execute(dbKitchen1,queryProcedureRecipe,[recipeID]).then(function(result){
       if(result.rows.length){
@@ -90,28 +107,131 @@ angular.module('starter.controllers', ['ngCordova'])
         console.log("Error: "+error);
       }
     );
+  });
+  }
+    
+  $scope.getRecipeDetails();
+    
+
+})
+
+.controller('ChatDetailCtrl', function($state,$scope, $stateParams, Chats, $cordovaSQLite) {
+  var dbKitchen1 = window.openDatabase("sqlite","1.0","sqlitedemo",2000);
+   // dbKitchen = $cordovaSQLite.openDB({name:"kitchen.db",location:"default"});
+  $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS recipe2(id integer primary key,categoryName text,recipeName text,notes text, imagePath text)");
+  $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS category(id integer primary key, categoryName text)");
+  $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS ingredients2(id integer primary key, recipeID integer, ingredientsName text, household text, weighted text)");
+  $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS procedure(id integer primary key, recipeID integer, procedureDetail text)");
+
+  $scope.recipeNameView = $stateParams.recipeName;
+  $scope.recID = null;
+  $scope.recipeDetail = [];
+  $scope.recipeIngredient = [];
+  $scope.recipeProcedure = [];
+
+  
+
+  $scope.getRecipeDetails = function(){
+    dbKitchen1.transaction(function(transaction){
+    var queryViewRecipe = "select * from recipe2 where recipeName = ?";
+    $cordovaSQLite.execute(dbKitchen1,queryViewRecipe,[$scope.recipeNameView]).then(function(result){
+      if(result.rows.length){
+          for(var i=0;i<result.rows.length;i++){
+            $scope.recipeDetail.push(result.rows.item(i));
+          }
+      }else{
+          console.log("No data found!");
+      }
+    }, function(error){
+        console.log("Error: "+error);
+      }
+    )
+
+    .then(function(){
+      $scope.recID = $scope.recipeDetail[0].id;
+      $scope.categoryName = $scope.recipeDetail[0].categoryName;
+      $scope.getrecipeIngredients($scope.recipeDetail[0].id);
+      $scope.getrecipeProcedure($scope.recipeDetail[0].id);
+      $scope.editRecipe = function(){
+        obj = $scope.recID;
+        $state.go('tab.editRecipe',{obj})
+      }
+    })
+    ;
+  });
   }
 
-    $scope.getRecipeDetails();
+  $scope.getrecipeIngredients = function(recipeID){
+    dbKitchen1.transaction(function(transaction){
+    var queryIngredientRecipe = "select * from ingredients2 where recipeID = ?";
+    $cordovaSQLite.execute(dbKitchen1,queryIngredientRecipe,[recipeID]).then(function(result){
+      if(result.rows.length){
+          for(var i=0;i<result.rows.length;i++){
+            $scope.recipeIngredient.push(result.rows.item(i));
+          }
+      }else{
+          console.log("No data found!");
+      }
+    }, function(error){
+        console.log("Error: "+error);
+      }
+    );
+  });
+  }
+
+  $scope.removeFields = function(removedID,deleteIdForDb) {
+    alert(deleteIdForDb)
+    $scope.recipeIngredient.splice(removedID,1);
+    $cordovaSQLite.execute(dbKitchen1,"DELETE FROM ingredients2 where id = ?",[deleteIdForDb]);
+  }
+  $scope.removeProcFields = function(removedID,deleteIdForDb){
+    $scope.recipeProcedure.splice(removedID,1);
+    $cordovaSQLite.execute(dbKitchen1,"DELETE FROM procedure where id = ?",[deleteIdForDb]);
+  }
+
+
+  $scope.getrecipeProcedure = function(recipeID){
+    dbKitchen1.transaction(function(transaction){
+    var queryProcedureRecipe = "select * from procedure where recipeID = ?";
+    $cordovaSQLite.execute(dbKitchen1,queryProcedureRecipe,[recipeID]).then(function(result){
+      if(result.rows.length){
+          for(var i=0;i<result.rows.length;i++){
+            $scope.recipeProcedure.push(result.rows.item(i));
+          }
+      }else{
+          console.log("No data found!");
+      }
+    }, function(error){
+        console.log("Error: "+error);
+      }
+    );
+  });
+  }
+    
+  $scope.getRecipeDetails();
     
 
 })
 
 .controller('CategoryRecipeCtrl', function($ionicModal,$state,$scope,$stateParams,$ionicPlatform,$cordovaSQLite){
   $ionicPlatform.ready(function(){
+    var dbKitchen1 = window.openDatabase("sqlite","1.0","sqlitedemo",2000);
     // $scope.category = Recipe.get($stateParams.categoryId);
-    
-   // dbKitchen1 = window.openDatabase("sqlite","1.0","sqlitedemo",2000);
-   dbKitchen = $cordovaSQLite.openDB({name:"kitchen.db",location:"default"});
-   $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS recipe2(id integer primary key,categoryName text,recipeName text,notes text)");
+    dbKitchen1.transaction(function(transaction){
+   
+   // dbKitchen = $cordovaSQLite.openDB({name:"kitchen.db",location:"default"});
+   $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS recipe2(id integer primary key,categoryName text,recipeName text,notes text, imagePath text)");
    $scope.cats = $stateParams.categoryName;
    $scope.recipeInCategory = [];
-
+ });
    $scope.addRecipewithCategory = function(){
+     dbKitchen1.transaction(function(transaction){
     var InsertQuery = "INSERT INTO recipe2(categoryName,recipeName,notes) VALUES(?,?,?)";
     $cordovaSQLite.execute(dbKitchen1,InsertQuery,["Sweets","Ice Cream","Palamagin hanggang sa lumamig"]);
+  });
    }
    
+    dbKitchen1.transaction(function(transaction){
    var query = "SELECT * FROM recipe2 WHERE categoryName = ?";
    $cordovaSQLite.execute(dbKitchen1,query,[$stateParams.categoryName]).then(function(result){
       if(result.rows.length){
@@ -124,6 +244,7 @@ angular.module('starter.controllers', ['ngCordova'])
    },function(error){
       console.log("Error: "+error);
     });
+ });
    var passCatName = $("#categoryNameHidden").val();
    $ionicModal.fromTemplateUrl('templates/modal_editCategory.html', function(modal) {
     $scope.modal = modal;
@@ -133,6 +254,7 @@ angular.module('starter.controllers', ['ngCordova'])
       // The animation we want to use for the modal entrance
       animation: 'slide-in-up'
     });
+    dbKitchen1.transaction(function(transaction){
    $scope.selectedcategoryid = null;
    var queryCategory = "Select * from category where categoryName = ?";
    $cordovaSQLite.execute(dbKitchen1,queryCategory,[$stateParams.categoryName]).then(function(result){
@@ -142,7 +264,7 @@ angular.module('starter.controllers', ['ngCordova'])
       }
     }
    })
-
+ });
     $scope.openModal = function(name) {
       $scope.selectedName = name;
       $scope.selectedID = $scope.selectedcategoryid;
@@ -161,10 +283,12 @@ angular.module('starter.controllers', ['ngCordova'])
     });  
 
     $scope.editCategory = function(){
+       dbKitchen1.transaction(function(transaction){
       var EditCategoryQuery = "UPDATE category SET categoryName = ? WHERE id = "+$scope.selectedID;
       $cordovaSQLite.execute(dbKitchen1,EditCategoryQuery,[$("#categoryInputEditName").val()]).then(function(result){
         $state.go('tab.dash',{redirect: true});
-      })
+      });
+    });
     }
     //
   });
@@ -177,13 +301,14 @@ angular.module('starter.controllers', ['ngCordova'])
   // });
 })
 
-.controller('EditRecipeCtrl', function($scope,$stateParams,$cordovaSQLite,$ionicPlatform,$state){
+
+.controller('editRecipeCategoryCtrl', function($scope,$stateParams,$cordovaSQLite,$ionicPlatform,$state){
   $ionicPlatform.ready(function(){
   var editRecipeId = $stateParams.obj;
 
-  // dbKitchen1 = window.openDatabase("sqlite","1.0","sqlitedemo",2000);
-   dbKitchen1 = $cordovaSQLite.openDB({name:"kitchen.db",location:"default"});
-  $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS recipe2(id integer primary key,categoryName text,recipeName text,notes text)");
+  var dbKitchen1 = window.openDatabase("sqlite","1.0","sqlitedemo",2000);
+   // dbKitchen1 = $cordovaSQLite.openDB({name:"kitchen.db",location:"default"});
+  $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS recipe2(id integer primary key,categoryName text,recipeName text,notes text, imagePath text)");
   $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS category(id integer primary key, categoryName text)");
   $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS ingredients2(id integer primary key, recipeID integer, ingredientsName text, household text, weighted text)");
   $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS procedure(id integer primary key, recipeID integer, procedureDetail text)");
@@ -191,8 +316,10 @@ angular.module('starter.controllers', ['ngCordova'])
   $scope.recipeDetail = [];
   $scope.recipeIngredient = [];
   $scope.recipeProcedure = [];
+  var recipeName = null;
 
   $scope.getRecipeDetails = function(){
+     dbKitchen1.transaction(function(transaction){
     var queryViewRecipe = "select * from recipe2 where id = ?";
     $cordovaSQLite.execute(dbKitchen1,queryViewRecipe,[editRecipeId]).then(function(result){
       if(result.rows.length){
@@ -212,14 +339,18 @@ angular.module('starter.controllers', ['ngCordova'])
       $scope.editRecipeName = $scope.recipeDetail[0].recipeName;
       $scope.editNote = $scope.recipeDetail[0].notes;
 
+      recipeName = $scope.recipeDetail[0].recipeName;
+
       $scope.getrecipeIngredients($scope.recipeDetail[0].id);
       $scope.getrecipeProcedure($scope.recipeDetail[0].id);
       
     })
     ;
+  });
   }
 
   $scope.getrecipeIngredients = function(recipeID){
+     dbKitchen1.transaction(function(transaction){
     var queryIngredientRecipe = "select * from ingredients2 where recipeID = ?";
     $cordovaSQLite.execute(dbKitchen1,queryIngredientRecipe,[editRecipeId]).then(function(result){
       if(result.rows.length){
@@ -233,9 +364,11 @@ angular.module('starter.controllers', ['ngCordova'])
         console.log("Error: "+error);
       }
     );
+  });
   }
 
   $scope.getrecipeProcedure = function(recipeID){
+     dbKitchen1.transaction(function(transaction){
     var queryProcedureRecipe = "select * from procedure where recipeID = ?";
     $cordovaSQLite.execute(dbKitchen1,queryProcedureRecipe,[editRecipeId]).then(function(result){
       if(result.rows.length){
@@ -249,6 +382,7 @@ angular.module('starter.controllers', ['ngCordova'])
         console.log("Error: "+error);
       }
     );
+  });
   }
 
   $scope.getRecipeDetails();
@@ -256,62 +390,64 @@ angular.module('starter.controllers', ['ngCordova'])
   
 
 $scope.addFields = function(){
+   dbKitchen1.transaction(function(transaction){
   $cordovaSQLite.execute(dbKitchen1,"Select * from ingredients2").then(function(result){
       $scope.recipeIngredient.push({'id':result.rows.length+1});
     });
+});
 }
 
-$scope.removeFields = function() {
-    var lastItem = $scope.recipeIngredient.length-1;
-    $scope.recipeIngredient.splice(lastItem);
-  };
 
   //======================= Add/Remove Field Procedure
 
 $scope.addProcFields = function(){
+   dbKitchen1.transaction(function(transaction){
   $cordovaSQLite.execute(dbKitchen1,"Select * from procedure").then(function(result){
       $scope.recipeProcedure.push({'id':result.rows.length+1});
     });
-}
-$scope.removeProcFields = function(){
-  var lastItem = $scope.recipeProcedure.length-1;
-  $scope.recipeProcedure.splice(lastItem);
+});
 }
 
+
 $scope.saveEditRecipe = function(){
+   dbKitchen1.transaction(function(transaction){
   var currentID = null;
     var query = "UPDATE recipe2 SET categoryName = ?,recipeName = ?,notes = ? WHERE id = "+editRecipeId;
     $cordovaSQLite.execute(dbKitchen1,query,[$("#rCategoryInput2").val(),$("#rNameInput2").val(),$("#notes2").val()])
     .then(function(success){
-      $cordovaSQLite.execute(dbKitchen1,"Select * from ingredients2").then(function(result){
-        if(result.rows.length){
+      $cordovaSQLite.execute(dbKitchen1,"Select * from ingredients2 WHERE recipeID = "+editRecipeId).then(function(result){
+        if(result.rows.length || $scope.recipeIngredient.length){
           for(var i=0; i<$scope.recipeIngredient.length; i++){
-            if($scope.recipeIngredient[i].id>result.rows.length){
-              var queryInsertNewItem = "INSERT INTO ingredients2(recipeID,ingredientsName,household,weighted) VALUES(?,?,?,?)";
-              $cordovaSQLite.execute(dbKitchen1,queryInsertNewItem,[editRecipeId,$scope.recipeIngredient[i].ingredientsName,$scope.recipeIngredient[i].household,$scope.recipeIngredient[i].weighted]);
+            if(i<=result.rows.length-1){
+              if($scope.recipeIngredient[i].id==result.rows.item(i).id){
+                var queryUpdateItem = "UPDATE ingredients2 SET  ingredientsName = ?, household = ?, weighted = ? WHERE id = "+$scope.recipeIngredient[i].id;
+                $cordovaSQLite.execute(dbKitchen1,queryUpdateItem,[$scope.recipeIngredient[i].ingredientsName,$scope.recipeIngredient[i].household,$scope.recipeIngredient[i].weighted]);
+               
+              }
             }
             else{
-              var queryUpdateItem = "UPDATE ingredients2 SET recipeID = ?, ingredientsName = ?, household = ?, weighted = ? WHERE id = "+$scope.recipeIngredient[i].id;
-              $cordovaSQLite.execute(dbKitchen1,queryUpdateItem,[editRecipeId,$scope.recipeIngredient[i].ingredientsName,$scope.recipeIngredient[i].household,$scope.recipeIngredient[i].weighted]);
+              var queryInsertNewItem = "INSERT INTO ingredients2(recipeID,ingredientsName,household,weighted) VALUES(?,?,?,?)";
+                $cordovaSQLite.execute(dbKitchen1,queryInsertNewItem,[editRecipeId,$scope.recipeIngredient[i].ingredientsName,$scope.recipeIngredient[i].household,$scope.recipeIngredient[i].weighted]);
             }
           }
         }
         else{
-          console.log(error);
+          console.log("error");
         }
       })
 
-      $cordovaSQLite.execute(dbKitchen1,"Select * from procedure").then(function(result){
-        if(result.rows.length){
+      $cordovaSQLite.execute(dbKitchen1,"Select * from procedure WHERE recipeID = "+editRecipeId).then(function(result){
+        if(result.rows.length || $scope.recipeid.length){
           for(var i=0; i<$scope.recipeProcedure.length; i++){
-            if($scope.recipeProcedure[i].id>result.rows.length){
-              var queryInsertNewItem = "INSERT INTO procedure(recipeID,procedureDetail) VALUES(?,?)";
+            if(i<=result.rows.length-1){
+              if($scope.recipeProcedure[i].id==result.rows.item(i).id){
+               var queryUpdateItem = "UPDATE procedure SET procedureDetail = ? WHERE id = "+$scope.recipeProcedure[i].id;
+                $cordovaSQLite.execute(dbKitchen1,queryUpdateItem,[$scope.recipeProcedure[i].procedureDetail]);
+              }
+          }else{
+             var queryInsertNewItem = "INSERT INTO procedure(recipeID,procedureDetail) VALUES(?,?)";
               $cordovaSQLite.execute(dbKitchen1,queryInsertNewItem,[editRecipeId,$scope.recipeProcedure[i].procedureDetail]);
-            }
-            else{
-              var queryUpdateItem = "UPDATE procedure SET recipeID = ?, procedureDetail = ? WHERE id = "+$scope.recipeProcedure[i].id;
-              $cordovaSQLite.execute(dbKitchen1,queryUpdateItem,[editRecipeId,$scope.recipeProcedure[i].procedureDetail]);
-            }
+          }
           }
         }
       })
@@ -319,9 +455,171 @@ $scope.saveEditRecipe = function(){
     })
     .then(function(success){
       $scope.loadRecipe();
-      $state.go('tab.chats',{redirect: true})
+      $state.go('tab.chat-detail2',{recipeName})
     })
     ;
+  });
+} 
+
+});
+})
+
+.controller('EditRecipeCtrl', function($scope,$stateParams,$cordovaSQLite,$ionicPlatform,$state){
+  $ionicPlatform.ready(function(){
+  var editRecipeId = $stateParams.obj;
+
+  var dbKitchen1 = window.openDatabase("sqlite","1.0","sqlitedemo",2000);
+   // dbKitchen1 = $cordovaSQLite.openDB({name:"kitchen.db",location:"default"});
+  $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS recipe2(id integer primary key,categoryName text,recipeName text,notes text, imagePath text)");
+  $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS category(id integer primary key, categoryName text)");
+  $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS ingredients2(id integer primary key, recipeID integer, ingredientsName text, household text, weighted text)");
+  $cordovaSQLite.execute(dbKitchen1,"CREATE TABLE IF NOT EXISTS procedure(id integer primary key, recipeID integer, procedureDetail text)");
+
+  $scope.recipeDetail = [];
+  $scope.recipeIngredient = [];
+  $scope.recipeProcedure = [];
+  var recipeName = null;
+
+  $scope.getRecipeDetails = function(){
+     dbKitchen1.transaction(function(transaction){
+    var queryViewRecipe = "select * from recipe2 where id = ?";
+    $cordovaSQLite.execute(dbKitchen1,queryViewRecipe,[editRecipeId]).then(function(result){
+      if(result.rows.length){
+          for(var i=0;i<result.rows.length;i++){
+            $scope.recipeDetail.push(result.rows.item(i));
+          }
+      }else{
+          console.log("No data found!");
+      }
+    }, function(error){
+        console.log("Error: "+error);
+      }
+    )
+
+    .then(function(){
+      $scope.editCategoryName = $scope.recipeDetail[0].categoryName;
+      $scope.editRecipeName = $scope.recipeDetail[0].recipeName;
+      $scope.editNote = $scope.recipeDetail[0].notes;
+
+      recipeName = $scope.recipeDetail[0].recipeName;
+
+      $scope.getrecipeIngredients($scope.recipeDetail[0].id);
+      $scope.getrecipeProcedure($scope.recipeDetail[0].id);
+      
+    })
+    ;
+  });
+  }
+
+  $scope.getrecipeIngredients = function(recipeID){
+     dbKitchen1.transaction(function(transaction){
+    var queryIngredientRecipe = "select * from ingredients2 where recipeID = ?";
+    $cordovaSQLite.execute(dbKitchen1,queryIngredientRecipe,[editRecipeId]).then(function(result){
+      if(result.rows.length){
+          for(var i=0;i<result.rows.length;i++){
+            $scope.recipeIngredient.push(result.rows.item(i));
+          }
+      }else{
+          console.log("No data found!");
+      }
+    }, function(error){
+        console.log("Error: "+error);
+      }
+    );
+  });
+  }
+
+  $scope.getrecipeProcedure = function(recipeID){
+     dbKitchen1.transaction(function(transaction){
+    var queryProcedureRecipe = "select * from procedure where recipeID = ?";
+    $cordovaSQLite.execute(dbKitchen1,queryProcedureRecipe,[editRecipeId]).then(function(result){
+      if(result.rows.length){
+          for(var i=0;i<result.rows.length;i++){
+            $scope.recipeProcedure.push(result.rows.item(i));
+          }
+      }else{
+          console.log("No data found!");
+      }
+    }, function(error){
+        console.log("Error: "+error);
+      }
+    );
+  });
+  }
+
+  $scope.getRecipeDetails();
+  
+  
+
+$scope.addFields = function(){
+   dbKitchen1.transaction(function(transaction){
+  $cordovaSQLite.execute(dbKitchen1,"Select * from ingredients2").then(function(result){
+      $scope.recipeIngredient.push({'id':result.rows.length+1});
+    });
+});
+}
+
+
+  //======================= Add/Remove Field Procedure
+
+$scope.addProcFields = function(){
+   dbKitchen1.transaction(function(transaction){
+  $cordovaSQLite.execute(dbKitchen1,"Select * from procedure").then(function(result){
+      $scope.recipeProcedure.push({'id':result.rows.length+1});
+    });
+});
+}
+
+
+$scope.saveEditRecipe = function(){
+   dbKitchen1.transaction(function(transaction){
+  var currentID = null;
+    var query = "UPDATE recipe2 SET categoryName = ?,recipeName = ?,notes = ? WHERE id = "+editRecipeId;
+    $cordovaSQLite.execute(dbKitchen1,query,[$("#rCategoryInput2").val(),$("#rNameInput2").val(),$("#notes2").val()])
+    .then(function(success){
+      $cordovaSQLite.execute(dbKitchen1,"Select * from ingredients2 WHERE recipeID = "+editRecipeId).then(function(result){
+        if(result.rows.length || $scope.recipeIngredient.length){
+          for(var i=0; i<$scope.recipeIngredient.length; i++){
+            if(i<=result.rows.length-1){
+              if($scope.recipeIngredient[i].id==result.rows.item(i).id){
+                var queryUpdateItem = "UPDATE ingredients2 SET  ingredientsName = ?, household = ?, weighted = ? WHERE id = "+$scope.recipeIngredient[i].id;
+                $cordovaSQLite.execute(dbKitchen1,queryUpdateItem,[$scope.recipeIngredient[i].ingredientsName,$scope.recipeIngredient[i].household,$scope.recipeIngredient[i].weighted]);
+               
+              }
+          }else{
+            var queryInsertNewItem = "INSERT INTO ingredients2(recipeID,ingredientsName,household,weighted) VALUES(?,?,?,?)";
+              $cordovaSQLite.execute(dbKitchen1,queryInsertNewItem,[editRecipeId,$scope.recipeIngredient[i].ingredientsName,$scope.recipeIngredient[i].household,$scope.recipeIngredient[i].weighted]);
+          }
+          }
+        }
+        else{
+          console.log(error);
+        }
+      })
+
+      $cordovaSQLite.execute(dbKitchen1,"Select * from procedure WHERE recipeID = "+editRecipeId).then(function(result){
+        if(result.rows.length || $scope.recipeid.length){
+          for(var i=0; i<$scope.recipeProcedure.length; i++){
+            if(i<=result.rows.length-1){
+            if($scope.recipeProcedure[i].id==result.rows.item(i).id){
+             var queryUpdateItem = "UPDATE procedure SET procedureDetail = ? WHERE id = "+$scope.recipeProcedure[i].id;
+              $cordovaSQLite.execute(dbKitchen1,queryUpdateItem,[$scope.recipeProcedure[i].procedureDetail]);
+            }
+          }else{
+            var queryInsertNewItem = "INSERT INTO procedure(recipeID,procedureDetail) VALUES(?,?)";
+              $cordovaSQLite.execute(dbKitchen1,queryInsertNewItem,[editRecipeId,$scope.recipeProcedure[i].procedureDetail]);
+          }
+          }
+        }
+      })
+
+    })
+    .then(function(success){
+      $scope.loadRecipe();
+      $state.go('tab.chat-detail',{recipeName})
+    })
+    ;
+  });
 } 
 
 });

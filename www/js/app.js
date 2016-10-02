@@ -24,10 +24,10 @@ app.run(function($ionicPlatform,$state,$cordovaSQLite) {
       StatusBar.styleDefault();
     }
 
-    // dbKitchen = window.openDatabase("sqlite","1.0","sqlitedemo",2000);
-    dbKitchen = $cordovaSQLite.openDB({name:"kitchen.db",location:"default"});
+    dbKitchen = window.openDatabase("sqlite","1.0","sqlitedemo",2000);
+    // dbKitchen = $cordovaSQLite.openDB({name:"kitchen.db",location:"default"});
     $cordovaSQLite.execute(dbKitchen,"CREATE TABLE IF NOT EXISTS category(id integer primary key, categoryName text)");
-    $cordovaSQLite.execute(dbKitchen,"CREATE TABLE IF NOT EXISTS recipe2(id integer primary key,categoryName text,recipeName text, notes text)");
+    $cordovaSQLite.execute(dbKitchen,"CREATE TABLE IF NOT EXISTS recipe2(id integer primary key,categoryName text,recipeName text, notes text, imagePath text)");
     $cordovaSQLite.execute(dbKitchen,"CREATE TABLE IF NOT EXISTS ingredients2(id integer primary key, recipeID integer, ingredientsName text, household text, weighted text)");
     $cordovaSQLite.execute(dbKitchen,"CREATE TABLE IF NOT EXISTS procedure(id integer primary key, recipeID integer, procedureDetail text)");
     
@@ -36,23 +36,54 @@ app.run(function($ionicPlatform,$state,$cordovaSQLite) {
   });
 })
 
-app.controller("appCtrl",function($scope,$state, $ionicModal,$cordovaSQLite,$ionicPlatform){
+app.controller("appCtrl",function($scope,$state, $ionicModal,$cordovaSQLite,$ionicPlatform,$cordovaImagePicker, $cordovaSocialSharing){
   //====================dbfunctions
   // $scope.$on('$ionicView.loaded', function(event) {
   //   $scope.loadCategory();
   // });
+  
   $ionicPlatform.ready(function(){
 
+ // share anywhere
+  $scope.share = function () {
+    $cordovaSocialSharing.share('This is my message', 'Title', 'http://thumbs.ifood.tv/files/image/7b/94/107805-filipino-pork-adobo.png', null);
+  }
+
+
+
+    $scope.imagePathtemp = null;
+    $scope.addImage = function(){
+      var options = {
+   maximumImagesCount: 1,
+   width: 200,
+   height: 200,
+   quality: 80
+  };
+
+  $cordovaImagePicker.getPictures(options)
+    .then(function (results) {
+      for (var i = 0; i < results.length; i++) {
+        $scope.imagePathtemp = results[i];
+      }
+    }, function(error) {
+      // error getting photos
+    });
+    }
+
+
   $scope.addCategory = function(category){
-    var query = "INSERT INTO category(categoryName) VALUES(?)";
-    $cordovaSQLite.execute(dbKitchen,query,[$("#categoryInputName").val()]);
-    $("#categoryInputName").val("");
-    $scope.modal.hide();
-    $scope.loadCategory();
+    dbKitchen.transaction(function(transaction){
+      var query = "INSERT INTO category(categoryName) VALUES(?)";
+      $cordovaSQLite.execute(dbKitchen,query,[$("#categoryInputName").val()]);
+      $("#categoryInputName").val("");
+      $scope.modal.hide();
+      $scope.loadCategory();
+    })
+    
   }
 
   $scope.loadCategory = function(){
-
+     dbKitchen.transaction(function(transaction){
     $scope.categoryData = [];
     $cordovaSQLite.execute(dbKitchen,"SELECT * from category").then(function(result){
 
@@ -68,10 +99,13 @@ app.controller("appCtrl",function($scope,$state, $ionicModal,$cordovaSQLite,$ion
     },function(error){
       console.log("Error: "+error);
     }
-    )};
+    )
+  });
+  };
 
     $scope.loadRecipe = function(){
-
+      dbKitchen.transaction(function(transaction){
+        $scope.orderName = null;
     $scope.recipeData = [];
     $cordovaSQLite.execute(dbKitchen,"SELECT * from recipe2").then(function(result){
 
@@ -87,13 +121,38 @@ app.controller("appCtrl",function($scope,$state, $ionicModal,$cordovaSQLite,$ion
     },function(error){
       console.log("Error: "+error);
     }
-    )};
+    )
+  });
+  }
+
+  $scope.sortbyName = function(){
+    $scope.orderName = "recipeName";
+  }
+
+   $scope.sortbyName1 = function(){
+    $scope.orderName = "categoryName";
+  }
+
+  
 
     $scope.deleteCategory = function(catID){
+      dbKitchen.transaction(function(transaction){
       var query = "DELETE FROM category WHERE id = ?";
-      $cordovaSQLite.execute(dbKitchen,query,[catID]);
+      $cordovaSQLite.execute(dbKitchen,query,[catID]).then(function(success){
+        $scope.loadCategory();
+      });
       //chats.splice(chats.indexOf(catID), 1);
-      
+      });
+    }
+
+    $scope.deleteRecipe = function(recID){
+      dbKitchen.transaction(function(transaction){
+      var query = "DELETE FROM recipe2 WHERE id = ?";
+      $cordovaSQLite.execute(dbKitchen,query,[recID]).then(function(success){
+        $scope.loadRecipe();
+      });
+      //chats.splice(chats.indexOf(catID), 1);
+      });
     }
 
     $scope.loadCategory();
@@ -156,9 +215,10 @@ $scope.removeProcFields = function(){
 
 //===================================== Finish Recipe Saved! =============================
 $scope.saveRecipe = function(){
+  dbKitchen.transaction(function(transaction){
     var currentID = null;
-    var query = "INSERT INTO recipe2(categoryName,recipeName,notes) VALUES(?,?,?)";
-    $cordovaSQLite.execute(dbKitchen,query,[$("#rCategoryInput").val(),$("#rNameInput").val(),$("#notes").val()])
+    var query = "INSERT INTO recipe2(categoryName,recipeName,notes,imagePath) VALUES(?,?,?,?)";
+    $cordovaSQLite.execute(dbKitchen,query,[$("#rCategoryInput").val(),$("#rNameInput").val(),$("#notes").val(),$scope.imagePathtemp])
     .then(function(success){
       $cordovaSQLite.execute(dbKitchen,"Select * from recipe2").then(function(result){
         if(result.rows.length){
@@ -172,6 +232,7 @@ $scope.saveRecipe = function(){
             var queryProcedure = "INSERT INTO procedure(recipeID,procedureDetail) VALUES(?,?)"
             $cordovaSQLite.execute(dbKitchen,queryProcedure,[currentID,$scope.procFields[i].name]);
           }
+
         }
         else{
           console.log(error);
@@ -183,7 +244,7 @@ $scope.saveRecipe = function(){
       $state.go('tab.chats',{redirect: true})
     })
     ;
-    
+    });
 }
 
 //=======================Edit Recipe functions=================
@@ -239,6 +300,16 @@ $scope.saveRecipe = function(){
       }
     })
 
+    .state('tab.chat-detail2', {
+      url: '/dash/viewRecipe/:recipeName',
+      views: {
+        'tab-dash': {
+          templateUrl: 'templates/recipeViewCategory.html',
+          controller: 'viewRecipeCategoryCtrl'
+        }
+      }
+    })
+
   .state('tab.account', {
     url: '/account',
     views: {
@@ -278,6 +349,15 @@ $scope.saveRecipe = function(){
     }
   })
 
+  .state('tab.editRecipeCategory',{
+    url: '/dash/:obj',
+    views:{
+      'tab-dash':{
+        templateUrl: 'templates/editRecipeCategory.html',
+        controller: 'editRecipeCategoryCtrl'
+      }
+    }
+  })
   // .state('tab.recipeView',{
   //   url: '/chat/:recipeid',
   //   views:{
@@ -290,6 +370,6 @@ $scope.saveRecipe = function(){
   ;
 
   // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/tab/dash');
+  $urlRouterProvider.otherwise('/tab/chats');
 
 });
