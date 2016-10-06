@@ -36,7 +36,7 @@ app.run(function($ionicPlatform,$state,$cordovaSQLite) {
   });
 })
 
-app.controller("appCtrl",function($scope,$state, $ionicModal,$cordovaSQLite,$ionicPlatform,$cordovaImagePicker, $cordovaSocialSharing){
+app.controller("appCtrl",function($scope,$state, $ionicModal,$cordovaSQLite,$ionicPlatform,$cordovaImagePicker, $cordovaSocialSharing, $cordovaInstagram){
   //====================dbfunctions
   // $scope.$on('$ionicView.loaded', function(event) {
   //   $scope.loadCategory();
@@ -44,10 +44,39 @@ app.controller("appCtrl",function($scope,$state, $ionicModal,$cordovaSQLite,$ion
   
   $ionicPlatform.ready(function(){
 
- // share anywhere
-  $scope.share = function () {
-    $cordovaSocialSharing.share('This is my message', 'Title', 'http://thumbs.ifood.tv/files/image/7b/94/107805-filipino-pork-adobo.png', null);
+                // ----SHARE------ //
+
+  // Facebook
+  $scope.shareFacebook = function (message,image) {
+     $cordovaSocialSharing.shareViaFacebook(message, image,null).then(function(result) {
+      console.log('Share Via Facebook');
+    }, function(err) {
+      console.log(err);
+    });
   }
+
+  // Twitter
+  $scope.shareTwitter = function (message,image) {
+     $cordovaSocialSharing.shareViaTwitter(message, image,null).then(function(result) {
+      console.log('Share Via Twitter');
+    }, function(err) {
+      console.log(err);
+    });
+  }
+  // Instagram
+  document.addEventListener("deviceready", function () { 
+  // your plugin call here 
+
+
+
+  $scope.shareInstagram = function (image,message) {
+     $cordovaInstagram.share(image, message).then(function(result) {
+      console.log('Share Via Instagram');
+    }, function(err) {
+      console.log(err);
+    });
+  }
+  });
 
 
 

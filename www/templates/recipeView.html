@@ -9,8 +9,15 @@
         </div>
         <div class="row ">
             <div class="center-block">
-        	   <button class="btn btn-success ion-edit" ng-click="editRecipe()">  Edit</button>
-               <button class="btn btn-primary ion-android-share" ng-click="share()">  Share</button>
+        	   <button class="btn btn-success ion-edit" ng-click="editRecipe()"></button>
+
+               <button class="btn btn-primary ion-social-facebook" ng-click="shareFacebook(recipeNameView,'http://thumbs.ifood.tv/files/image/7b/94/107805-filipino-pork-adobo.png')"></button>
+
+               <button class="btn btn-info ion-social-twitter" ng-click="shareTwitter(recipeNameView,'http://thumbs.ifood.tv/files/image/7b/94/107805-filipino-pork-adobo.png')"></button>
+
+               <button class="btn btn-warning ion-social-instagram-outline" ng-click="shareInstagram('http://thumbs.ifood.tv/files/image/7b/94/107805-filipino-pork-adobo.png',recipeNameView)"></button>
+
+               <button class="btn btn-primary ion-bluetooth" ng-click="shareAnywhere('http://thumbs.ifood.tv/files/image/7b/94/107805-filipino-pork-adobo.png',recipeNameView)"></button>
             </div>
     	</div>
         <br><br>
